@@ -62,6 +62,49 @@ input:focus, select:focus { border-color: #EC6C19; box-shadow: 0 0 0 3px rgba(23
 .finance-highlight > div + div { background: var(--portico-gradient); color: #FFFFFF; }
 .equipment li::before, .empty-state > span { color: #EC6C19; }
 
+.form-grid > .wide { grid-column: 1 / -1; }
+.field-section { border-top: 1px solid var(--line); padding-top: 14px; }
+.field-section h3 { margin: 0; font-size: 16px; color: #202020; }
+.field-section p, .field-help { font-size: 12px; color: var(--muted); line-height: 1.6; }
+.hybrid-fields { min-width: 0; border: 1px solid #f2c6a9; border-radius: 14px; padding: 22px; background: #fff8f2; }
+.hybrid-fields legend { padding: 0 8px; font-weight: 800; }
+[hidden] { display: none !important; }
+.proposal { border-radius: 20px; overflow: hidden; }
+.proposal-cover { background: radial-gradient(ellipse at 100% 10%, #733218 0%, transparent 55%), linear-gradient(150deg, #171717 72%, #ec6c19 72%, #f59e17 100%); }
+.cover-copy { margin-top: 120px; }
+.cover-copy h2 { letter-spacing: -.045em; }
+.system-badge { display: table; margin-bottom: 22px; padding: 8px 14px; border: 1px solid #b8784c; border-radius: 30px; color: #ffbd86; font-size: 12px; font-weight: 800; }
+.cover-result { gap: 35px; padding-top: 24px; border-top: 1px solid #ffffff30; }
+.proposal-page { border-top: 1px solid var(--line); min-height: 850px; }
+.section-kicker { color: #c65112; font-size: 11px; font-weight: 800; letter-spacing: .15em; }
+.equipment-page .section-heading { margin-top: 16px; }
+.equipment-cards { display: grid; gap: 16px; margin: 30px 0; }
+.equipment-card { padding: 24px; border: 1px solid var(--line); border-left: 4px solid #ec6c19; border-radius: 12px; background: linear-gradient(110deg, #fff8f2, #fff); break-inside: avoid; overflow-wrap: anywhere; }
+.equipment-card small { color: #a84712; font-size: 10px; font-weight: 800; letter-spacing: .12em; }
+.equipment-card h3 { margin: 9px 0; font-size: 22px; }
+.equipment-card p { margin: 0; font-size: 13px; color: var(--muted); }
+.storage-summary { padding: 22px; background: #202020; color: #fff; border-radius: 12px; font-size: 13px; line-height: 1.8; }
+.technical-note { margin-top: 26px; padding-top: 16px; border-top: 1px solid var(--line); }
+.technical-note h3 { font-size: 15px; }
+.technical-note p { font-size: 12px; color: var(--muted); line-height: 1.7; }
+.client-card, .cover-copy, .equipment li { overflow-wrap: anywhere; }
+.chart-card { padding-bottom: 42px; }
+.finance-page footer { position: static; margin-top: 36px; gap: 16px; flex-wrap: wrap; }
+@media screen and (max-width: 600px) {
+  .topbar { gap: 10px; }.topbar h1 { font-size: 20px; }.topbar .primary { padding: 10px; font-size: 11px; }
+  .view { padding: 20px 12px; }.form-card { padding: 20px 14px; }
+  .form-grid { grid-template-columns: 1fr; }.form-grid label.wide { grid-column: 1; }
+  .step { gap: 4px; }.step span { font-size: 10px; }.stepper i { width: 12px; margin: 0 4px; }
+  .proposal-cover, .proposal-page { padding: 28px 20px; min-height: auto; }
+  .proposal-cover { min-height: 650px; }.proposal-number { position: static; margin-top: 18px; }
+  .cover-copy { margin-top: 60px; }.cover-copy h2 { font-size: 34px; }
+  .cover-result { flex-direction: column; gap: 20px; margin: 40px 0; }
+  .client-card, .finance-highlight, .economy-row, .equipment ul { grid-template-columns: 1fr; }
+  .chart-heading { flex-direction: column; gap: 12px; }.bars { gap: 4px; }
+  .result-grid div { padding: 12px; }.result-grid strong { font-size: 16px; }
+  .proposal-header { flex-wrap: wrap; gap: 12px; }.section-heading { font-size: 27px; }
+  .average-box { flex-wrap: wrap; }.average-box small { margin-left: 0; }
+}
 /* Impressão sem cabeçalhos/rodapés automáticos do navegador */
 @page {
   size: A4;
@@ -81,6 +124,8 @@ input:focus, select:focus { border-color: #EC6C19; box-shadow: 0 0 0 3px rgba(23
     width: 210mm;
     min-height: 297mm;
     margin: 0;
-    overflow: hidden;
+    overflow: visible;
   }
+  .proposal { border-radius: 0; }
+  .equipment-card, .storage-summary, .finance-highlight, .client-card { break-inside: avoid; }
 }

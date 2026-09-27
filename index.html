@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="theme-portico.css" />
+  <link rel="stylesheet" href="contracts.css" />
 </head>
 <body>
   <aside class="sidebar">
@@ -73,9 +74,31 @@
         <div class="form-card step-panel" data-step="3">
           <div class="form-title"><span>03</span><div><h2>Parâmetros do sistema</h2><p>Ajuste tarifa, módulo, desempenho e condições comerciais.</p></div></div>
           <div class="form-grid">
+            <div class="wide field-section"><h3>01 / Equipamentos do projeto</h3><p>Informe marca e modelo conforme o orçamento do fornecedor.</p></div>
+            <label class="wide">Tipo de sistema<select name="systemType"><option value="grid">Conectado à rede (on-grid)</option><option value="hybrid">Híbrido com baterias</option></select></label>
+            <label>Marca dos módulos<input name="moduleBrand" list="moduleBrands" placeholder="Selecione ou digite" required></label>
+            <datalist id="moduleBrands"><option value="Canadian Solar"><option value="JA Solar"><option value="Jinko Solar"><option value="LONGi"><option value="Trina Solar"></datalist>
+            <label>Modelo dos módulos<input name="moduleModel" placeholder="Código do fabricante" required></label>
+            <label>Marca do inversor<input name="inverterBrand" list="inverterBrands" placeholder="Selecione ou digite" required></label>
+            <datalist id="inverterBrands"><option value="Deye"><option value="Growatt"><option value="GoodWe"><option value="Solis"><option value="Sungrow"><option value="Hoymiles"></datalist>
+            <label>Modelo do inversor<input name="inverterModel" placeholder="Código do fabricante" required></label>
+            <label>Tecnologia do inversor<select name="inverterType"><option value="string">Inversor string</option><option value="micro">Microinversor</option><option value="hybrid" disabled>Inversor híbrido</option></select></label>
+            <label>Potência por inversor (kW)<input name="inverterPower" type="number" min="0.01" step="0.01" value="3" required></label>
+            <label>Quantidade de inversores<input name="inverterQuantity" type="number" min="1" step="1" value="1" required></label>
+            <label>Área por módulo (m²)<input name="moduleArea" type="number" min="0.01" step="0.001" value="2.645" required></label>
+            <fieldset class="wide hybrid-fields" id="hybridFields" hidden disabled><legend>Armazenamento e backup</legend><div class="form-grid">
+              <label>Marca da bateria<input name="batteryBrand" required></label>
+              <label>Modelo da bateria<input name="batteryModel" required></label>
+              <label>Capacidade por bateria (kWh)<input name="batteryCapacity" type="number" min="0.1" step="0.1" value="5.1" required></label>
+              <label>Quantidade de baterias<input name="batteryQuantity" type="number" min="1" step="1" value="1" required></label>
+              <label>Profundidade de descarga (%)<input name="batteryDod" type="number" min="1" max="100" step="1" value="90" required></label>
+              <label>Carga média de backup (kW)<input name="backupLoad" type="number" min="0.01" step="0.01" value="0.5" required></label>
+              <label class="wide">Custo adicional de armazenamento e backup (R$)<input name="batteryCost" type="number" min="0" step="0.01" placeholder="Baterias, proteções e instalação de backup" required></label>
+            </div><p class="field-help">Confirme a compatibilidade entre inversor e baterias. A autonomia é teórica e não considera perdas.</p></fieldset>
+            <div class="wide field-section"><h3>02 / Dimensionamento e investimento</h3><p>Inclua módulos e inversores no custo do kit. Informe o armazenamento separadamente.</p></div>
             <label>Tarifa de energia (R$/kWh)<input type="number" step="0.01" name="tariff" value="1.15"></label>
             <label>HSP médio diário<input type="number" step="0.01" name="hsp" value="5.1675"></label>
-            <label>Potência do módulo (W)<select name="modulePower"><option>450</option><option>550</option><option selected>550</option><option>575</option><option>585</option></select></label>
+            <label>Potência do módulo (W)<input name="modulePower" type="number" min="1" step="1" value="550" required></label>
             <label>Performance ratio<input type="number" step="0.01" name="performance" value="0.74"></label>
             <label>Custo do kit (R$)<input type="number" step="0.01" name="kitCost" value="5200"></label>
             <label>Margem sobre o kit<input type="number" step="0.01" name="margin" value="0.49"></label>
@@ -109,6 +132,15 @@
           <div class="chart-card"><div class="chart-heading"><div><h3>Geração estimada</h3><p>Produção mensal prevista em kWh</p></div><strong id="pMonthlyAverage"></strong></div><div class="bars" id="generationChart"></div></div>
         </div>
 
+        <div class="proposal-page equipment-page">
+          <span class="section-kicker">02 / TECNOLOGIA DO SEU PROJETO</span>
+          <h2 class="section-heading">Equipamentos escolhidos</h2>
+          <p class="lead" id="pSystemDescription"></p>
+          <div class="equipment-cards" id="pEquipmentCards"></div>
+          <div class="storage-summary" id="pStorage" hidden></div>
+          <div class="technical-note"><h3>Premissas do projeto</h3><p id="pAssumptions"></p><p>A seleção depende da validação de tensão, fases, MPPT, limites elétricos e condições da instalação pelo responsável técnico.</p></div>
+        </div>
+
         <div class="proposal-page finance-page">
           <h2 class="section-heading">O investimento que se paga</h2>
           <p class="lead">A economia produzida pelo sistema recupera o investimento e continua gerando valor.</p>
@@ -124,6 +156,9 @@
     <section id="clients" class="view empty-state"><span>♙</span><h2>Clientes</h2><p>Os clientes cadastrados aparecerão aqui nas próximas versões.</p><button class="primary openQuote">Cadastrar primeiro cliente</button></section>
     <section id="settings" class="view empty-state"><span>⚙</span><h2>Configurações comerciais</h2><p>Tarifas, equipamentos, margens e modelos de proposta serão administrados aqui.</p><button class="primary openQuote">Usar configurações do modelo</button></section>
   </main>
+  <script src="contract-template.js"></script>
+  <script src="contract-core.js"></script>
   <script src="app.js"></script>
+  <script src="contracts.js"></script>
 </body>
 </html>
