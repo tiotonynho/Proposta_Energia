@@ -61,3 +61,26 @@ input:focus, select:focus { border-color: #EC6C19; box-shadow: 0 0 0 3px rgba(23
 .finance-highlight { background: #000000; }
 .finance-highlight > div + div { background: var(--portico-gradient); color: #FFFFFF; }
 .equipment li::before, .empty-state > span { color: #EC6C19; }
+
+/* Impressão sem cabeçalhos/rodapés automáticos do navegador */
+@page {
+  size: A4;
+  margin: 0;
+}
+
+@media print {
+  html, body {
+    width: 210mm;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF;
+  }
+
+  .proposal-cover,
+  .proposal-page {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    overflow: hidden;
+  }
+}
