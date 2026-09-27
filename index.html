@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SolarPro - Orçamentos Fotovoltaicos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="theme-portico.css" />
+</head>
+<body>
+  <aside class="sidebar">
+    <div class="brand"><span class="brand-mark">S</span><span>SolarPro</span></div>
+    <nav>
+      <button class="nav-item active" data-view="dashboard"><span>⌂</span> Visão geral</button>
+      <button class="nav-item" data-view="quote"><span>＋</span> Novo orçamento</button>
+      <button class="nav-item" data-view="clients"><span>♙</span> Clientes</button>
+      <button class="nav-item" data-view="settings"><span>⚙</span> Configurações</button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar">AC</div>
+      <div><strong>Antônio Cruz</strong><small>Pórtico Solar Energy</small></div>
+    </div>
+  </aside>
+
+  <main>
+    <header class="topbar">
+      <div><small>Plataforma comercial</small><h1 id="pageTitle">Visão geral</h1></div>
+      <button class="primary" id="newQuoteTop">+ Novo orçamento</button>
+    </header>
+
+    <section id="dashboard" class="view active-view">
+      <div class="hero">
+        <div><span class="eyebrow">ORÇAMENTO INTELIGENTE</span><h2>Transforme consumo em economia solar.</h2><p>Cadastre o cliente, informe o consumo e gere uma proposta completa em poucos minutos.</p><button class="primary light" id="heroNew">Criar orçamento</button></div>
+        <div class="sun-orbit"><div class="sun">☀</div><span class="orbit one"></span><span class="orbit two"></span></div>
+      </div>
+      <div class="metric-grid">
+        <article class="metric"><span class="metric-icon green">◒</span><div><small>Propostas no mês</small><strong>12</strong><em>+20% vs. mês anterior</em></div></article>
+        <article class="metric"><span class="metric-icon amber">R$</span><div><small>Valor em propostas</small><strong>R$ 184 mil</strong><em>8 em negociação</em></div></article>
+        <article class="metric"><span class="metric-icon blue">↗</span><div><small>Potência projetada</small><strong>67,4 kWp</strong><em>Este mês</em></div></article>
+      </div>
+      <div class="panel">
+        <div class="panel-heading"><div><h3>Propostas recentes</h3><p>Acompanhe seus últimos orçamentos.</p></div><button class="ghost" id="panelNew">Nova proposta</button></div>
+        <div class="table-wrap"><table><thead><tr><th>Proposta</th><th>Cliente</th><th>Sistema</th><th>Valor</th><th>Status</th></tr></thead><tbody id="recentQuotes"><tr><td>#PT098</td><td>Lívia Nascimento</td><td>3,30 kWp</td><td>R$ 9.572,00</td><td><span class="status sent">Enviada</span></td></tr><tr><td>#PT097</td><td>Mercado Central</td><td>8,80 kWp</td><td>R$ 27.940,00</td><td><span class="status draft">Rascunho</span></td></tr><tr><td>#PT096</td><td>Marcos Oliveira</td><td>5,50 kWp</td><td>R$ 16.480,00</td><td><span class="status approved">Aprovada</span></td></tr></tbody></table></div>
+      </div>
+    </section>
+
+    <section id="quote" class="view">
+      <div class="stepper"><div class="step active"><b>1</b><span>Cliente</span></div><i></i><div class="step"><b>2</b><span>Consumo</span></div><i></i><div class="step"><b>3</b><span>Sistema</span></div><i></i><div class="step"><b>4</b><span>Proposta</span></div></div>
+      <form id="quoteForm">
+        <div class="form-card step-panel active" data-step="1">
+          <div class="form-title"><span>01</span><div><h2>Dados do cliente</h2><p>Informações de identificação e endereço da instalação.</p></div></div>
+          <div class="form-grid">
+            <label class="wide">Nome / Razão social<input name="clientName" value="Lívia Nascimento Monteiro" required></label>
+            <label>CPF / CNPJ<input name="document" placeholder="000.000.000-00"></label>
+            <label>Telefone<input name="phone" placeholder="(35) 99999-9999"></label>
+            <label class="wide">Endereço<input name="address" value="Rua João Esteves Veronezi, 23 - Vista Alegre" required></label>
+            <label>Cidade<input name="city" value="Alfenas" required></label>
+            <label>UF<select name="state"><option selected>MG</option><option>SP</option><option>RJ</option><option>PR</option></select></label>
+            <label>Nº da instalação<input name="installation" placeholder="Número da UC"></label>
+            <label>Tipo de ligação<select name="connection"><option value="30">Monofásico</option><option value="50" selected>Bifásico</option><option value="100">Trifásico</option></select></label>
+          </div>
+        </div>
+
+        <div class="form-card step-panel" data-step="2">
+          <div class="form-title"><span>02</span><div><h2>Histórico de consumo</h2><p>Informe os últimos 12 meses em kWh. No futuro estes dados poderão ser extraídos da conta.</p></div></div>
+          <div class="consumption-grid" id="consumptionGrid"></div>
+          <div class="average-box"><span>Média mensal</span><strong id="averageConsumption">400 kWh</strong><small>Consumo compensável: <b id="compensableConsumption">350 kWh</b></small></div>
+        </div>
+
+        <div class="form-card step-panel" data-step="3">
+          <div class="form-title"><span>03</span><div><h2>Parâmetros do sistema</h2><p>Ajuste tarifa, módulo, desempenho e condições comerciais.</p></div></div>
+          <div class="form-grid">
+            <label>Tarifa de energia (R$/kWh)<input type="number" step="0.01" name="tariff" value="1.15"></label>
+            <label>HSP médio diário<input type="number" step="0.01" name="hsp" value="5.1675"></label>
+            <label>Potência do módulo (W)<select name="modulePower"><option>450</option><option>550</option><option selected>550</option><option>575</option><option>585</option></select></label>
+            <label>Performance ratio<input type="number" step="0.01" name="performance" value="0.74"></label>
+            <label>Custo do kit (R$)<input type="number" step="0.01" name="kitCost" value="5200"></label>
+            <label>Margem sobre o kit<input type="number" step="0.01" name="margin" value="0.49"></label>
+            <label>Instalação sobre o kit<input type="number" step="0.01" name="installationRate" value="0.23077"></label>
+            <label>Engenharia sobre o kit<input type="number" step="0.01" name="engineeringRate" value="0.12"></label>
+            <label>Reajuste anual da energia<input type="number" step="0.01" name="energyInflation" value="0.10"></label>
+            <label>Orientação<select name="orientation"><option selected>Norte</option><option>Nordeste</option><option>Noroeste</option><option>Leste</option><option>Oeste</option></select></label>
+          </div>
+        </div>
+
+        <div class="form-actions"><button type="button" class="ghost hidden" id="prevStep">← Voltar</button><span></span><button type="button" class="primary" id="nextStep">Continuar →</button></div>
+      </form>
+    </section>
+
+    <section id="proposal" class="view">
+      <div class="proposal-actions"><button class="ghost" id="editQuote">← Editar dados</button><button class="primary" id="printProposal">Imprimir / Salvar PDF</button></div>
+      <article class="proposal" id="proposalDocument">
+        <div class="proposal-cover">
+          <div class="proposal-brand"><span class="brand-mark">S</span><b>PÓRTICO<br>SOLAR ENERGY</b></div>
+          <span class="proposal-number" id="pNumber">PT099/2026</span>
+          <div class="cover-copy"><span>PROPOSTA TÉCNICA COMERCIAL</span><h2>Energia limpa.<br>Economia de verdade.</h2><p>Projeto fotovoltaico personalizado para <strong id="pClientCover"></strong>.</p></div>
+          <div class="cover-result"><div><small>Potência do sistema</small><strong id="pPowerCover"></strong></div><div><small>Economia no 1º ano</small><strong id="pSavingsCover"></strong></div></div>
+        </div>
+
+        <div class="proposal-page">
+          <div class="proposal-header"><div class="proposal-brand dark"><span class="brand-mark">S</span><b>PÓRTICO SOLAR ENERGY</b></div><span id="pDate"></span></div>
+          <h2 class="section-heading">Seu projeto solar</h2>
+          <p class="lead">Dimensionamento desenvolvido a partir do consumo informado e do potencial solar da região.</p>
+          <div class="client-card"><div><small>CLIENTE</small><strong id="pClient"></strong><span id="pAddress"></span></div><div><small>INSTALAÇÃO</small><strong id="pInstallation"></strong><span id="pConnection"></span></div></div>
+          <div class="result-grid"><div><small>Potência instalada</small><strong id="pPower"></strong></div><div><small>Módulos solares</small><strong id="pModules"></strong></div><div><small>Geração anual</small><strong id="pGeneration"></strong></div><div><small>Área estimada</small><strong id="pArea"></strong></div></div>
+          <div class="chart-card"><div class="chart-heading"><div><h3>Geração estimada</h3><p>Produção mensal prevista em kWh</p></div><strong id="pMonthlyAverage"></strong></div><div class="bars" id="generationChart"></div></div>
+        </div>
+
+        <div class="proposal-page finance-page">
+          <h2 class="section-heading">O investimento que se paga</h2>
+          <p class="lead">A economia produzida pelo sistema recupera o investimento e continua gerando valor.</p>
+          <div class="finance-highlight"><div><small>INVESTIMENTO TOTAL</small><strong id="pInvestment"></strong><span>Equipamentos, projeto e instalação</span></div><div><small>PAYBACK SIMPLES</small><strong id="pPayback"></strong><span>Retorno estimado</span></div></div>
+          <div class="economy-row"><div><small>Economia no 1º ano</small><strong id="pAnnualSavings"></strong></div><div><small>Economia média mensal</small><strong id="pMonthlySavings"></strong></div><div><small>Vida útil considerada</small><strong>25 anos</strong></div></div>
+          <div class="equipment"><h3>Equipamentos e serviços inclusos</h3><ul id="pEquipment"></ul></div>
+          <div class="terms"><h3>Condições comerciais</h3><p>Pagamento à vista: 80% na assinatura do contrato e 20% após a instalação. Proposta válida por 3 dias, sujeita à disponibilidade dos equipamentos.</p></div>
+          <footer><span>Pórtico Solar Energy • Alfenas/MG</span><span>antoniocruz@porticosolar.com.br • (35) 98409-2508</span></footer>
+        </div>
+      </article>
+    </section>
+
+    <section id="clients" class="view empty-state"><span>♙</span><h2>Clientes</h2><p>Os clientes cadastrados aparecerão aqui nas próximas versões.</p><button class="primary openQuote">Cadastrar primeiro cliente</button></section>
+    <section id="settings" class="view empty-state"><span>⚙</span><h2>Configurações comerciais</h2><p>Tarifas, equipamentos, margens e modelos de proposta serão administrados aqui.</p><button class="primary openQuote">Usar configurações do modelo</button></section>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

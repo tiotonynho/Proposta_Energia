@@ -1,0 +1,63 @@
+/* Identidade visual oficial Pórtico Solar Energy */
+:root {
+  --ink: #000000;
+  --muted: #646363;
+  --green: #EC6C19;
+  --green2: #E73C1D;
+  --lime: #F59E17;
+  --cream: #FAFAFA;
+  --white: #FFFFFF;
+  --line: #E3E3E3;
+  --amber: #F59E17;
+  --blue: #EC6C19;
+  --portico-gradient: linear-gradient(120deg, #E73C1D 0%, #EC6C19 52%, #F59E17 100%);
+  --shadow: 0 18px 50px rgba(0, 0, 0, .10);
+}
+
+body, body * { font-family: 'Nunito', Arial, sans-serif !important; }
+.brand, .topbar h1, .hero h2, .metric strong, .panel h3, .form-title h2,
+.average-box strong, .proposal-brand b, .cover-copy h2, .cover-result strong,
+.section-heading, .result-grid strong, .chart-heading strong, .finance-highlight strong,
+.economy-row strong, .equipment h3, .terms h3 { font-family: 'Nunito', sans-serif; }
+
+body { color: var(--ink); background: #FAFAFA; }
+.sidebar { background: #000000; }
+.brand-mark { background: var(--portico-gradient); color: #FFFFFF; border-radius: 11px; }
+.nav-item { color: #C6C6C6; }
+.nav-item:hover, .nav-item.active {
+  background: linear-gradient(90deg, rgba(231, 60, 29, .28), rgba(245, 158, 23, .16));
+  color: #FFFFFF;
+}
+.avatar { background: var(--portico-gradient); }
+.sidebar-footer small { color: #C6C6C6; }
+.topbar { background: rgba(250, 250, 250, .94); border-color: #E3E3E3; }
+.primary { background: var(--portico-gradient); box-shadow: 0 8px 18px rgba(236, 108, 25, .24); }
+.primary:hover { background: linear-gradient(120deg, #D9341B, #E95C13, #EB8B0F); }
+.hero { background: var(--portico-gradient); }
+.eyebrow, .hero p { color: #FFFFFF; }
+.primary.light { background: #000000; color: #FFFFFF; }
+.sun { background: #FFFFFF; color: #EC6C19; box-shadow: 0 0 70px rgba(255, 255, 255, .32); }
+.metric, .panel, .form-card { border-color: #E3E3E3; box-shadow: 0 5px 20px rgba(0, 0, 0, .04); }
+.metric-icon.green, .metric-icon.amber, .metric-icon.blue { background: #FFF0E7; color: #E73C1D; }
+.metric em { color: #EC6C19; }
+.sent { background: #FFF0E7; color: #C93418; }
+.draft { background: #E3E3E3; color: #646363; }
+.approved { background: #FFE3D2; color: #A72C18; }
+.step.active { color: #E73C1D; }
+.step.active b { background: var(--portico-gradient); border-color: #EC6C19; }
+.form-title > span { color: #E73C1D; background: #FFF0E7; }
+.form-grid label, .consumption-grid label { color: #646363; }
+input:focus, select:focus { border-color: #EC6C19; box-shadow: 0 0 0 3px rgba(236, 108, 25, .12); }
+.average-box { background: #FFF3EB; }
+.average-box strong { color: #E73C1D; }
+.proposal-cover {
+  background: linear-gradient(145deg, #000000 0%, #1D1D1D 68%, #E73C1D 68%, #F59E17 100%);
+}
+.proposal-number, .cover-result small { color: #C6C6C6; }
+.cover-copy > span { color: #F59E17; }
+.cover-copy p { color: #E3E3E3; }
+.result-grid strong, .chart-heading strong { color: #E73C1D; }
+.bar { background: linear-gradient(#F59E17, #EC6C19, #E73C1D); }
+.finance-highlight { background: #000000; }
+.finance-highlight > div + div { background: var(--portico-gradient); color: #FFFFFF; }
+.equipment li::before, .empty-state > span { color: #EC6C19; }
