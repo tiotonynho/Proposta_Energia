@@ -24,7 +24,7 @@ test('modelo remove dados do cliente original e preenche equipamentos e anexo',(
 });
 test('API: autenticação, aceite, revisão, assinatura imutável e persistência',async t=>{
   const dataDir=path.join(__dirname,'../tmp','contracts-test-'+crypto.randomUUID());
-  let server=createServer({dataDir,password:'test-only-password'});
+  let server=createServer({dataDir});
   await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   t.after(()=>new Promise(resolve=>server.close(resolve)));
   let base='http://127.0.0.1:'+server.address().port,cookie='';
@@ -34,7 +34,7 @@ test('API: autenticação, aceite, revisão, assinatura imutável e persistênci
   }
   assert.equal((await request('/api/records')).status,401);
   assert.equal((await request('/api/login','POST',{password:'wrong'})).status,401);
-  cookie=(await request('/api/login','POST',{password:'test-only-password'})).cookie;
+  cookie=(await request('/api/auth/setup','POST',{name:'Admin Teste',email:'admin@example.com',password:'test-only-password'})).cookie;
   const created=await request('/api/records','POST',{proposal},true);assert.equal(created.status,201);
   const id=created.data.id,token=created.data.publicPath.split('#')[1],url='/api/public/'+token;
   assert.equal((await request('/api/public/'+'x'.repeat(43))).status,404);
@@ -58,7 +58,7 @@ test('API: autenticação, aceite, revisão, assinatura imutável e persistênci
   const crossOrigin=await fetch(base+'/api/records',{method:'POST',headers:{'Content-Type':'application/json',cookie,Origin:'https://example.com'},body:JSON.stringify({proposal})});
   assert.equal(crossOrigin.status,403);
   await new Promise(resolve=>server.close(resolve));
-  server=createServer({dataDir,password:'test-only-password'});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+  server=createServer({dataDir});await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
   base='http://127.0.0.1:'+server.address().port;
   const persisted=(await request(url)).data;assert.equal(persisted.status,'signed');
   assert.equal(persisted.signature.hash,crypto.createHash('sha256').update(text).digest('hex'));

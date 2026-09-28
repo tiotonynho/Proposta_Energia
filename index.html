@@ -10,8 +10,9 @@
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="theme-portico.css" />
   <link rel="stylesheet" href="contracts.css" />
+  <link rel="stylesheet" href="auth.css" />
 </head>
-<body>
+<body class="auth-locked">
   <aside class="sidebar">
     <div class="brand"><span class="brand-mark">S</span><span>SolarPro</span></div>
     <nav>
@@ -156,9 +157,11 @@
     <section id="clients" class="view empty-state"><span>♙</span><h2>Clientes</h2><p>Os clientes cadastrados aparecerão aqui nas próximas versões.</p><button class="primary openQuote">Cadastrar primeiro cliente</button></section>
     <section id="settings" class="view empty-state"><span>⚙</span><h2>Configurações comerciais</h2><p>Tarifas, equipamentos, margens e modelos de proposta serão administrados aqui.</p><button class="primary openQuote">Usar configurações do modelo</button></section>
   </main>
+  <script src="api-client.js"></script>
   <script src="contract-template.js"></script>
   <script src="contract-core.js"></script>
   <script src="app.js"></script>
   <script src="contracts.js"></script>
+  <script src="auth-ui.js"></script>
 </body>
 </html>

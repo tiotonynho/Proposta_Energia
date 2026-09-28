@@ -18,7 +18,7 @@ function showView(id){
   document.querySelector(`#${id}`).classList.add('active-view');
   document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.view===id));
   const titles={dashboard:'Visão geral',quote:'Novo orçamento',clients:'Clientes',settings:'Configurações',proposal:'Proposta gerada',contracts:'Contratos',contract:'Contrato'};
-  document.querySelector('#pageTitle').textContent=titles[id]||'SolarPro';
+  document.querySelector('#pageTitle').textContent=({team:'Equipe',account:'Minha conta'})[id]||titles[id]||'SolarPro';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 

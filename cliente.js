@@ -1,10 +1,10 @@
 (()=>{
   const token=location.hash.slice(1),$=s=>document.querySelector(s);
   let record;
+  const api=SolarApi.createClient();
   const money=n=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n);
   async function request(action='',data){
-    const response=await fetch('/api/public/'+encodeURIComponent(token)+action,{method:data?'POST':'GET',headers:data?{'Content-Type':'application/json'}:{},body:data?JSON.stringify(data):undefined});
-    const result=await response.json();if(!response.ok)throw new Error(result.error);return result;
+    return api('public/'+encodeURIComponent(token)+action,{method:data?'POST':'GET',body:data?JSON.stringify(data):undefined});
   }
   async function load(){
     record=await request();const p=record.proposal,target=$('#publicSummary');target.replaceChildren();

@@ -4,13 +4,27 @@ Protótipo web baseado no modelo de proposta da Pórtico Solar Energy.
 
 ## Como executar
 
-Use Node.js 24 ou superior. O módulo de contratos precisa do servidor; abrir o HTML diretamente ou usar o servidor do Python permite apenas o orçamento.
+Use Node.js 24 ou superior. A plataforma agora exige o servidor para autenticar as contas. Abra o endereço HTTP exibido no terminal, em vez do arquivo HTML.
 
 ```powershell
 node server.js
 ```
 
-Depois acesse `http://127.0.0.1:8080`. No menu Contratos, informe a chave administrativa gerada em `.data/admin-key.txt`. Você também pode definir `SOLARPRO_ADMIN_PASSWORD` no ambiente antes de iniciar o servidor. Não há dependências npm para instalar.
+Depois acesse `http://127.0.0.1:8080`. No primeiro acesso, crie a conta administradora com nome, e-mail e senha de pelo menos 10 caracteres. Não há dependências npm para instalar.
+
+## Contas e equipe
+
+- O administrador cadastra vendedores e outros administradores pelo menu **Equipe**, informando uma senha provisória. Compartilhe as credenciais diretamente com a pessoa; a plataforma não envia e-mails.
+- A primeira entrada exige a troca da senha provisória.
+- Vendedores acessam apenas seus clientes, propostas compartilhadas e contratos. O administrador acessa todos os registros e gerencia as contas.
+- A opção **Manter conectado** dura 30 dias. Sem ela, a sessão tem limite de 8 horas e usa cookie de sessão do navegador.
+- **Minha conta** permite trocar a senha e sair. A troca de senha encerra as demais sessões. Administradores podem redefinir senhas provisórias e desativar acessos na área Equipe.
+- Não há recuperação automática por e-mail. Mantenha uma segunda conta administradora para recuperação operacional.
+- As senhas usam scrypt com salt individual. Os tokens de sessão são armazenados como hash no SQLite e os cookies são HttpOnly e SameSite=Strict.
+- A configuração da primeira conta só é permitida por uma conexão local e com `PUBLIC_URL` ainda não definido. Configure a conta antes de publicar.
+- A migração preserva o banco existente: os registros anteriores ficam vinculados à primeira conta administradora. A chave antiga em `.data/admin-key.txt` e a variável `SOLARPRO_ADMIN_PASSWORD` deixam de autenticar usuários.
+
+O formulário de orçamento em edição continua temporário. Os registros são salvos no servidor ao gerar o link do cliente.
 
 ## O que está implementado
 
@@ -34,7 +48,7 @@ A proposta inclui uma página de equipamentos e premissas. A economia é limitad
 ## Contratos, aceite e assinatura
 
 1. Gere uma proposta com os equipamentos preenchidos.
-2. Entre no menu Contratos com a chave administrativa.
+2. A sessão iniciada com e-mail e senha já autoriza o uso de Contratos, sem outra chave.
 3. Na proposta, clique em **Gerar link do cliente** e compartilhe o endereço. O prazo para aceite é de 3 dias.
 4. O cliente acessa o link, confere a proposta e registra o aceite com nome, CPF/CNPJ e e-mail.
 5. No menu Contratos, atualize a lista e abra o registro aceito. Confira os dados da contratada, instalação, pagamento, prazo, testemunhas e, no híbrido, circuitos de backup.
@@ -52,7 +66,7 @@ As propostas compartilhadas e os contratos ficam no SQLite em `.data/contracts.s
 
 ### Disponibilizar links aos clientes
 
-Os links locais só funcionam no computador que executa o servidor. Para acesso externo, hospede o servidor em um endereço HTTPS e configure `PUBLIC_URL` com essa origem. Defina também `HOST` e `PORT` conforme a hospedagem e mantenha o banco em disco persistente. O servidor escuta apenas `127.0.0.1` por padrão. As sessões administrativas duram 8 horas; com `PUBLIC_URL=https://...`, o cookie usa Secure.
+Os links locais só funcionam no computador que executa o servidor. Para acesso externo, hospede o servidor em um endereço HTTPS e configure `PUBLIC_URL` com essa origem, depois de criar a conta administradora localmente. Defina também `HOST` e `PORT` conforme a hospedagem e mantenha o banco em disco persistente. O servidor escuta apenas `127.0.0.1` por padrão. Com `PUBLIC_URL=https://...`, o cookie usa Secure.
 
 Exemplo de configuração no PowerShell, após providenciar a hospedagem:
 
@@ -68,7 +82,7 @@ A publicação e a contratação de serviços externos não foram realizadas.
 ### Verificação
 
 ```powershell
-node --test tests/contracts.test.js
+node --test tests/*.test.js
 ```
 
 Os testes verificam preenchimento do modelo, sistemas híbridos, autenticação, aceite, concorrência, revisão, bloqueio de assinatura desatualizada, imutabilidade após assinatura e persistência após reiniciar.

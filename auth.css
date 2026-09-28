@@ -1,0 +1,14 @@
+.auth-locked>main,.auth-locked>.sidebar{display:none!important}
+.auth-gate{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:32px 20px;background:radial-gradient(ellipse at top left,#fff0e2,#f7f7f7 60%)}
+.auth-card{min-width:0;width:100%;max-width:480px;padding:36px;background:white;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}
+.auth-card .brand>span:last-child{font-size:22px}
+.auth-card .brand{margin:0 0 32px;color:#171717}.auth-card h1{font-size:27px;margin:12px 0}
+.auth-card p{line-height:1.6;color:var(--muted)}.auth-card label,.account-form label{display:block;margin:16px 0;font-size:13px;font-weight:700}
+.auth-card .check-label{display:flex}.auth-card .primary{width:100%;margin-top:8px}
+#authMessage,#accountMessage,#teamMessage{color:#a63e12;font-size:13px}
+.account-form{max-width:480px;margin:24px 0}#userForm>.primary{margin-top:20px}
+.team-row{display:flex;align-items:center;flex-wrap:wrap;gap:20px;padding:22px 0;border-top:1px solid var(--line)}
+.team-row>div{flex:1;min-width:200px}.team-row small{display:block;margin-top:6px;color:var(--muted)}
+.team-row details{max-width:100%}.reset-password{margin-top:14px}.reset-password button{margin-top:12px}
+@media(max-width:600px){.auth-card{padding:26px 22px}.team-row{align-items:flex-start}}
+@media print{.auth-gate{display:none!important}}

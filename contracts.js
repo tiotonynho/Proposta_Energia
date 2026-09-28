@@ -9,7 +9,7 @@
   nav.replaceChildren(el('span','▤'),document.createTextNode(' Contratos'));nav.setAttribute('aria-label','Contratos');
   nav.onclick=()=>{refresh();showView('contracts');};$('.sidebar nav').append(nav);
   const list=document.createElement('section');list.id='contracts';list.className='view';
-  list.innerHTML='<div class="panel"><div class="panel-heading"><div><h2>Contratos</h2><p>Do aceite da proposta à preparação para assinatura.</p></div></div><p class="field-help">Registros salvos no servidor. Compartilhe o link para o cliente aceitar a proposta e assinar o contrato.</p><form id="serverLogin"><label>Chave de acesso administrativo<input name="password" type="password" required autocomplete="current-password" placeholder="Chave configurada no servidor"></label><button class="primary">Entrar</button></form><p id="contractStorageMessage" role="status"></p><button class="ghost" id="refreshContracts">Atualizar lista</button><div id="contractList"></div></div>';
+  list.innerHTML='<div class="panel"><div class="panel-heading"><div><h2>Contratos</h2><p>Do aceite da proposta à preparação para assinatura.</p></div></div><p class="field-help">Registros salvos no servidor. Compartilhe o link para o cliente aceitar a proposta e assinar o contrato.</p><p id="contractStorageMessage" role="status"></p><button class="ghost" id="refreshContracts">Atualizar lista</button><div id="contractList"></div></div>';
   $('main').append(list);
   const editor=document.createElement('section');editor.id='contract';editor.className='view';
   editor.innerHTML=`<div class="contract-controls"><div class="proposal-actions"><button class="ghost" id="backContracts">← Contratos</button><button class="primary" id="printContract" disabled>Imprimir / Salvar PDF</button></div>
@@ -22,21 +22,17 @@
   const approval=document.createElement('div');approval.className='panel acceptance-panel';
   approval.innerHTML='<h3>Aceite e assinatura por link</h3><p id="proposalApprovalStatus">Crie o link para o cliente revisar e aceitar esta proposta.</p><button class="primary" id="shareProposal">Gerar link do cliente</button><p id="acceptanceMessage" role="status"></p><a id="customerLink" target="_blank" rel="noopener noreferrer" hidden></a>';
   $('.proposal-actions').after(approval);
-  async function api(path,options={}){
-    const response=await fetch('/api/'+path,{...options,headers:{'Content-Type':'application/json',...options.headers}});
-    let data;try{data=await response.json();}catch{throw new Error('Inicie a plataforma com node server.js para usar os contratos.');}
-    if(!response.ok)throw new Error(data.error);
-    return data;
-  }
+  const api=SolarApi.createClient();
+  const loginShortcut=el('button','Entrar na plataforma','ghost');loginShortcut.hidden=true;
+  loginShortcut.onclick=()=>window.SolarAuth?.requireLogin();$('#acceptanceMessage').after(loginShortcut);
+  const returnToProposal=el('button','Voltar à proposta','ghost');returnToProposal.hidden=true;
+  returnToProposal.onclick=()=>showView('proposal');$('#refreshContracts').after(returnToProposal);
   async function refresh(){
-    try{records=await api('records');$('#serverLogin').hidden=true;$('#contractStorageMessage').textContent='';renderList();}
-    catch(error){$('#serverLogin').hidden=false;$('#contractStorageMessage').textContent=error.message;}
-  }
-  $('#serverLogin').onsubmit=async event=>{
-    event.preventDefault();const loginForm=event.currentTarget;
-    try{await api('login',{method:'POST',body:JSON.stringify({password:loginForm.elements.password.value})});loginForm.reset();await refresh();}
+    if(!window.SolarAuth?.user||window.SolarAuth.user.mustChangePassword)return;
+    try{records=await api('records');$('#contractStorageMessage').textContent='';renderList();renderOverview();}
     catch(error){$('#contractStorageMessage').textContent=error.message;}
-  };
+  }
+  window.addEventListener('authchanged',refresh);
   $('#refreshContracts').onclick=refresh;
   function renderList(){
     const target=$('#contractList');target.replaceChildren();
@@ -49,11 +45,28 @@
       row.append(info,status,button);target.append(row);
     }
   }
+  function renderOverview(){
+    const tbody=$('#recentQuotes');tbody.replaceChildren();
+    const labels={pending:'Aguardando aceite',accepted:'Aceita — preparar contrato',prepared:'Aguardando assinatura',signed:'Assinada'};
+    for(const record of [...records].reverse().slice(0,10)){
+      const row=document.createElement('tr');
+      for(const value of [record.id,record.proposal.clientName,number(record.proposal.installedKwp)+' kWp',money(record.proposal.investment),labels[record.status]])row.append(el('td',value));
+      tbody.append(row);
+    }
+    if(!records.length){const row=document.createElement('tr'),cell=el('td','Suas propostas compartilhadas aparecerão aqui.');cell.colSpan=5;row.append(cell);tbody.append(row);}
+    const metrics=document.querySelectorAll('.metric');
+    const stats=[['Propostas',String(records.length),'Visíveis para sua conta'],['Valor em propostas',money(records.reduce((sum,r)=>sum+r.proposal.investment,0)),'Total dos seus registros'],['Potência projetada',number(records.reduce((sum,r)=>sum+r.proposal.installedKwp,0))+' kWp','Propostas compartilhadas']];
+    metrics.forEach((metric,i)=>{if(stats[i]){metric.querySelector('small').textContent=stats[i][0];metric.querySelector('strong').textContent=stats[i][1];metric.querySelector('em').textContent=stats[i][2];}});
+    const clients=$('#clients');clients.classList.remove('empty-state');clients.replaceChildren(el('h2','Clientes'));
+    const unique=new Map();for(const r of records)unique.set(r.proposal.document||r.proposal.clientName,r.proposal);
+    for(const client of unique.values()){const row=el('div','','contract-row');row.append(el('strong',client.clientName),el('small',client.city+'/'+client.state));clients.append(row);}
+    if(!unique.size)clients.append(el('p','Os clientes das suas propostas compartilhadas aparecerão aqui.'));
+  }
   function proposalReady(proposal){
     pending={id:uid(),proposal:ContractCore.clone(proposal)};
     $('#pNumber').textContent=pending.id;
     $('#proposalApprovalStatus').textContent='Aguardando aceite do cliente · '+pending.id;
-    $('#shareProposal').disabled=false;$('#customerLink').hidden=true;$('#acceptanceMessage').textContent='';
+    $('#shareProposal').disabled=false;$('#customerLink').hidden=true;$('#acceptanceMessage').textContent='';loginShortcut.hidden=true;returnToProposal.hidden=false;
   }
   window.addEventListener('proposalbuilt',event=>proposalReady(event.detail));
   if(lastResult)proposalReady(lastResult);
@@ -66,13 +79,14 @@
     try{
       if(!pending)throw new Error('Gere uma proposta completa.');
       $('#shareProposal').disabled=true;
+      loginShortcut.hidden=true;$('#acceptanceMessage').textContent='Gerando link…';
       const record=await api('records',{method:'POST',body:JSON.stringify({proposal:pending.proposal})});
       pending.id=record.id;$('#pNumber').textContent=record.id;
       $('#proposalApprovalStatus').textContent='Aguardando aceite · '+record.id;
       const link=$('#customerLink');link.href=record.publicPath;link.textContent=new URL(record.publicPath,location.href).href;link.hidden=false;
       $('#acceptanceMessage').textContent='Compartilhe este link com o cliente. Válido por 3 dias para aceite.';
       await refresh();
-    }catch(error){$('#acceptanceMessage').textContent=error.message+' Acesse Contratos para entrar no servidor.';$('#shareProposal').disabled=false;}
+    }catch(error){$('#acceptanceMessage').textContent=error.message;loginShortcut.hidden=error.code!=='AUTH_REQUIRED';$('#shareProposal').disabled=false;}
   };
   const definitions=[
     ['company','Razão social da contratada','PÓRTICO SOLAR ENERGY COMÉRCIO E REPRESENTAÇÃO LTDA'],
