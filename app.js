@@ -4,6 +4,7 @@ const form=document.querySelector('#quoteForm');
 const grid=document.querySelector('#consumptionGrid');
 let currentStep=1;
 let lastResult=null;
+const defaultModuleArea=2.645;
 
 months.forEach((month,index)=>{grid.insertAdjacentHTML('beforeend',`<label>${month}<input class="consumption" type="number" min="0" step="1" value="400" aria-label="Consumo ${month}"></label>`)});
 
@@ -23,11 +24,76 @@ function showView(id){
 }
 
 function updateAverage(){
-  const list=[...document.querySelectorAll('.consumption')].map(i=>Number(i.value)||0);
-  const avg=list.reduce((a,b)=>a+b,0)/12;
+  const list=consumptionValues();
+  const avg=monthlyAverage(list);
   const available=Number(field('connection').value)||0;
   document.querySelector('#averageConsumption').textContent=`${number(avg,0)} kWh`;
   document.querySelector('#compensableConsumption').textContent=`${number(Math.max(avg-available,0),0)} kWh`;
+}
+
+function consumptionValues(){
+  return [...document.querySelectorAll('.consumption')].map(i=>Number(i.value)||0);
+}
+
+function monthlyAverage(list){
+  return list.reduce((a,b)=>a+b,0)/12;
+}
+
+function dimensioningEstimate(data=values(),consumption=consumptionValues()){
+  const average=monthlyAverage(consumption);
+  const availability=Number(data.connection)||0;
+  const targetMonthly=Math.max(average-availability,0);
+  const hsp=Math.max(Number(data.hsp)||0,0);
+  const performance=Math.max(Number(data.performance)||0,0);
+  const modulePower=Math.max(Number(data.modulePower)||0,0);
+  const requiredKwp=hsp&&performance?targetMonthly/(hsp*30.4*performance):0;
+  const modules=modulePower?Math.max(1,Math.ceil(requiredKwp*1000/modulePower)):0;
+  const installedKwp=modules*modulePower/1000;
+  const referenceHsp=monthlyHsp.reduce((a,b)=>a+b,0)/12;
+  const generation=monthlyHsp.map(h=>h/referenceHsp*hsp*30.4*performance*installedKwp);
+  const annualGeneration=generation.reduce((a,b)=>a+b,0);
+  return {consumption,average,targetMonthly,hsp,performance,modulePower,requiredKwp,modules,installedKwp,generation,annualGeneration};
+}
+
+function updateDimensioningPreview(){
+  const estimate=dimensioningEstimate();
+  const fields={
+    moduleCountPreview:String(estimate.modules),
+    installedPowerPreview:`${number(estimate.installedKwp)} kWp`,
+    monthlyGenerationPreview:`${number(estimate.annualGeneration/12,0)} kWh`,
+    annualGenerationPreview:`${number(estimate.annualGeneration,0)} kWh`
+  };
+  for(const [id,text] of Object.entries(fields)){
+    const item=document.querySelector(`#${id}`);
+    if(item)item.textContent=text;
+  }
+}
+
+function percentageRate(data,name){
+  return Number(data[name]||0)/100;
+}
+
+function investmentBreakdown(){
+  const data=values();
+  const kitCost=Number(data.kitCost)||0;
+  const storageCost=data.systemType==='hybrid'?(Number(data.batteryCost)||0):0;
+  const marginCost=kitCost*percentageRate(data,'margin');
+  const installationCost=kitCost*percentageRate(data,'installationRate');
+  const engineeringCost=kitCost*percentageRate(data,'engineeringRate');
+  const taxCost=kitCost*percentageRate(data,'taxRate');
+  const total=kitCost+marginCost+installationCost+engineeringCost+taxCost+storageCost;
+  return {kitCost,storageCost,marginCost,installationCost,engineeringCost,taxCost,total};
+}
+
+function updateInvestmentPreview(){
+  const breakdown=investmentBreakdown();
+  const amounts={marginAmount:breakdown.marginCost,installationAmount:breakdown.installationCost,engineeringAmount:breakdown.engineeringCost,taxAmount:breakdown.taxCost};
+  for(const [id,value] of Object.entries(amounts)){
+    const item=document.querySelector(`#${id}`);
+    if(item)item.textContent=money(value);
+  }
+  const preview=document.querySelector('#totalInvestmentPreview');
+  if(preview)preview.textContent=money(breakdown.total);
 }
 
 function setStep(step){
@@ -40,19 +106,8 @@ function setStep(step){
 
 function calculate(){
   const d=values();
-  const consumption=[...document.querySelectorAll('.consumption')].map(i=>Number(i.value)||0);
-  const average=consumption.reduce((a,b)=>a+b,0)/12;
-  const availability=Number(d.connection);
-  const targetMonthly=Math.max(average-availability,0);
-  const hsp=Number(d.hsp);
-  const performance=Number(d.performance);
-  const modulePower=Number(d.modulePower);
-  const requiredKwp=targetMonthly/(hsp*30.4*performance);
-  const modules=Math.max(1,Math.ceil(requiredKwp*1000/modulePower));
-  const installedKwp=modules*modulePower/1000;
-  const referenceHsp=monthlyHsp.reduce((a,b)=>a+b,0)/12;
-  const generation=monthlyHsp.map(h=>h/referenceHsp*hsp*30.4*performance*installedKwp);
-  const annualGeneration=generation.reduce((a,b)=>a+b,0);
+  const dimensioning=dimensioningEstimate(d);
+  const {consumption,average,targetMonthly,modules,installedKwp,generation,annualGeneration}=dimensioning;
   const tariff=Number(d.tariff);
   const annualSavings=Math.min(annualGeneration,targetMonthly*12)*tariff;
   const kitCost=Number(d.kitCost);
@@ -61,9 +116,13 @@ function calculate(){
   const storageCapacity=hybrid?Number(d.batteryCapacity)*Number(d.batteryQuantity):0;
   const usableCapacity=storageCapacity*Number(d.batteryDod||0)/100;
   const autonomy=hybrid?usableCapacity/Number(d.backupLoad):0;
-  const investment=kitCost*(1+Number(d.margin)+Number(d.installationRate)+Number(d.engineeringRate))+storageCost;
+  const marginCost=kitCost*percentageRate(d,'margin');
+  const installationCost=kitCost*percentageRate(d,'installationRate');
+  const engineeringCost=kitCost*percentageRate(d,'engineeringRate');
+  const taxCost=kitCost*percentageRate(d,'taxRate');
+  const investment=kitCost+marginCost+installationCost+engineeringCost+taxCost+storageCost;
   const payback=investment/annualSavings;
-  return {...d,hybrid,storageCost,storageCapacity,usableCapacity,autonomy,consumption,average,targetMonthly,modules,installedKwp,generation,annualGeneration,annualSavings,investment,payback,area:modules*Number(d.moduleArea)};
+  return {...d,hybrid,storageCost,storageCapacity,usableCapacity,autonomy,consumption,average,targetMonthly,modules,installedKwp,generation,annualGeneration,annualSavings,investment,payback,area:modules*defaultModuleArea};
 }
 
 function buildProposal(r){
@@ -113,7 +172,7 @@ function renderEquipment(r){
   }));
   const storage=document.querySelector('#pStorage');storage.hidden=!r.hybrid;
   storage.textContent=r.hybrid?`Energia utilizável: ${number(r.usableCapacity)} kWh • Autonomia teórica: ${number(r.autonomy)} h com carga média de ${number(Number(r.backupLoad))} kW. Descarga considerada: ${r.batteryDod}%. Perdas, reserva e picos de carga podem reduzir a autonomia. Backup depende de circuito dedicado e validação técnica.`:'';
-  document.querySelector('#pAssumptions').textContent=`HSP: ${number(Number(r.hsp))} h/dia · Performance ratio: ${number(Number(r.performance)*100,0)}% · Orientação: ${r.orientation}. Área estimada conforme dimensões informadas, sem corredores. Economia limitada ao consumo compensável informado, com tarifa de ${money(Number(r.tariff))}/kWh; não inclui reajustes, degradação ou custos de manutenção. O armazenamento não acrescenta geração nem economia à estimativa. Custo adicional de armazenamento e backup: ${money(r.storageCost)}.`;
+  document.querySelector('#pAssumptions').textContent=`HSP: ${number(Number(r.hsp))} h/dia · Performance ratio: ${number(Number(r.performance)*100,0)}% · Orientação: ${r.orientation}. Área estimada por referência técnica de ${number(defaultModuleArea,3)} m² por módulo, sem corredores. Economia limitada ao consumo compensável informado, com tarifa de ${money(Number(r.tariff))}/kWh; não inclui reajustes, degradação ou custos de manutenção. O armazenamento não acrescenta geração nem economia à estimativa. Custo adicional de armazenamento e backup: ${money(r.storageCost)}.`;
   const items=[`${r.modules} módulos ${moduleLabel}`,`${r.inverterQuantity} × ${inverterLabel}`,'Projeto de engenharia e homologação','Estrutura de fixação e instalação','Proteções elétricas e conectores'];
   if(r.hybrid)items.push(`${r.batteryQuantity} baterias ${r.batteryBrand} ${r.batteryModel} e instalação de backup`);
   document.querySelector('#pEquipment').replaceChildren(...items.map(text=>{const li=document.createElement('li');li.textContent=text;return li;}));
@@ -128,7 +187,7 @@ function syncSystem(){
 }
 field('systemType').addEventListener('change',syncSystem);
 syncSystem();
-for(const name of ['tariff','hsp','performance','kitCost','margin','installationRate','engineeringRate','energyInflation']){
+for(const name of ['tariff','hsp','performance','kitCost','margin','installationRate','engineeringRate','taxRate','energyInflation']){
   field(name).required=true;
   field(name).min=['hsp','performance'].includes(name)?'0.01':'0';
 }
@@ -136,6 +195,8 @@ field('performance').max='1';
 field('hsp').step='any';
 field('installationRate').step='any';
 form.addEventListener('submit',event=>event.preventDefault());
+form.addEventListener('input',()=>{updateInvestmentPreview();updateDimensioningPreview();});
+form.addEventListener('change',()=>{updateInvestmentPreview();updateDimensioningPreview();});
 
 function validateStep(step){
   const controls=document.querySelectorAll(`[data-step="${step}"] input,[data-step="${step}"] select`);
@@ -159,6 +220,8 @@ document.querySelector('#nextStep').addEventListener('click',()=>{
 document.querySelector('#editQuote').addEventListener('click',()=>{showView('quote');setStep(3)});
 document.querySelector('#printProposal').addEventListener('click',()=>window.print());
 updateAverage();
+updateInvestmentPreview();
+updateDimensioningPreview();
 const preview=new URLSearchParams(location.search).get('preview');
 if(preview==='quote')showView('quote');
 if(preview==='proposal'){

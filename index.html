@@ -55,12 +55,12 @@
         <div class="form-card step-panel active" data-step="1">
           <div class="form-title"><span>01</span><div><h2>Dados do cliente</h2><p>Informações de identificação e endereço da instalação.</p></div></div>
           <div class="form-grid">
-            <label class="wide">Nome / Razão social<input name="clientName" value="Lívia Nascimento Monteiro" required></label>
+            <label class="wide">Nome / Razão social<input name="clientName" placeholder="Nome completo" required></label>
             <label>CPF / CNPJ<input name="document" placeholder="000.000.000-00"></label>
             <label>Telefone<input name="phone" placeholder="(35) 99999-9999"></label>
-            <label class="wide">Endereço<input name="address" value="Rua João Esteves Veronezi, 23 - Vista Alegre" required></label>
-            <label>Cidade<input name="city" value="Alfenas" required></label>
-            <label>UF<select name="state"><option selected>MG</option><option>SP</option><option>RJ</option><option>PR</option></select></label>
+            <label class="wide">Endereço<input name="address" placeholder="Insira seu endereço" required></label>
+            <label>UF<select name="state" required><option value="" selected disabled>UF</option><option>MG</option><option>SP</option><option>RJ</option><option>PR</option></select></label>
+            <label>Cidade<input name="city" placeholder="Escolha a sua cidade" required></label>
             <label>Nº da instalação<input name="installation" placeholder="Número da UC"></label>
             <label>Tipo de ligação<select name="connection"><option value="30">Monofásico</option><option value="50" selected>Bifásico</option><option value="100">Trifásico</option></select></label>
           </div>
@@ -86,7 +86,7 @@
             <label>Tecnologia do inversor<select name="inverterType"><option value="string">Inversor string</option><option value="micro">Microinversor</option><option value="hybrid" disabled>Inversor híbrido</option></select></label>
             <label>Potência por inversor (kW)<input name="inverterPower" type="number" min="0.01" step="0.01" value="3" required></label>
             <label>Quantidade de inversores<input name="inverterQuantity" type="number" min="1" step="1" value="1" required></label>
-            <label>Área por módulo (m²)<input name="moduleArea" type="number" min="0.01" step="0.001" value="2.645" required></label>
+            <label>Potência do módulo (W)<input name="modulePower" type="number" min="1" step="1" value="550" required></label>
             <fieldset class="wide hybrid-fields" id="hybridFields" hidden disabled><legend>Armazenamento e backup</legend><div class="form-grid">
               <label>Marca da bateria<input name="batteryBrand" required></label>
               <label>Modelo da bateria<input name="batteryModel" required></label>
@@ -99,12 +99,19 @@
             <div class="wide field-section"><h3>02 / Dimensionamento e investimento</h3><p>Inclua módulos e inversores no custo do kit. Informe o armazenamento separadamente.</p></div>
             <label>Tarifa de energia (R$/kWh)<input type="number" step="0.01" name="tariff" value="1.15"></label>
             <label>HSP médio diário<input type="number" step="0.01" name="hsp" value="5.1675"></label>
-            <label>Potência do módulo (W)<input name="modulePower" type="number" min="1" step="1" value="550" required></label>
             <label>Performance ratio<input type="number" step="0.01" name="performance" value="0.74"></label>
+            <div class="wide dimensioning-preview" aria-live="polite">
+              <div><span>Total de módulos</span><strong id="moduleCountPreview">0</strong></div>
+              <div><span>Potência instalada</span><strong id="installedPowerPreview">0,00 kWp</strong></div>
+              <div><span>Geração média mensal</span><strong id="monthlyGenerationPreview">0 kWh</strong></div>
+              <div><span>Geração anual estimada</span><strong id="annualGenerationPreview">0 kWh</strong></div>
+            </div>
             <label>Custo do kit (R$)<input type="number" step="0.01" name="kitCost" value="5200"></label>
-            <label>Margem sobre o kit<input type="number" step="0.01" name="margin" value="0.49"></label>
-            <label>Instalação sobre o kit<input type="number" step="0.01" name="installationRate" value="0.23077"></label>
-            <label>Engenharia sobre o kit<input type="number" step="0.01" name="engineeringRate" value="0.12"></label>
+            <div class="wide rate-line"><label>Lucro sobre o kit (%)<input type="number" step="0.01" name="margin" value="49"></label><div class="amount-field"><span>Valor em R$</span><output id="marginAmount">R$ 0,00</output></div></div>
+            <div class="wide rate-line"><label>Custo de instalação e material (%)<input type="number" step="0.01" name="installationRate" value="23.08"></label><div class="amount-field"><span>Valor em R$</span><output id="installationAmount">R$ 0,00</output></div></div>
+            <div class="wide rate-line"><label>Custo de Engenharia (%)<input type="number" step="0.01" name="engineeringRate" value="12"></label><div class="amount-field"><span>Valor em R$</span><output id="engineeringAmount">R$ 0,00</output></div></div>
+            <div class="wide rate-line"><label>Impostos a pagar (%)<input type="number" step="0.01" name="taxRate" value="0"></label><div class="amount-field"><span>Valor em R$</span><output id="taxAmount">R$ 0,00</output></div></div>
+            <div class="wide cost-total" aria-live="polite"><span>Custo total atualizado</span><strong id="totalInvestmentPreview">R$ 0,00</strong><small>Kit + percentuais sobre o kit + armazenamento, quando houver.</small></div>
             <label>Reajuste anual da energia<input type="number" step="0.01" name="energyInflation" value="0.10"></label>
             <label>Orientação<select name="orientation"><option selected>Norte</option><option>Nordeste</option><option>Noroeste</option><option>Leste</option><option>Oeste</option></select></label>
           </div>
