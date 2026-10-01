@@ -15,6 +15,20 @@ function createServer({dataDir=path.join(__dirname,'.data'),publicUrl=process.en
   const read=id=>{const row=db.prepare('SELECT body FROM records WHERE id=?').get(id);return row?JSON.parse(row.body):null;};
   const save=r=>db.prepare('UPDATE records SET body=? WHERE id=?').run(JSON.stringify(r),r.id);
   const fail=(message,status=400)=>Object.assign(new Error(message),{status});
+  function ownedRecord(id,user){
+    const owner=db.prepare('SELECT owner_id FROM records WHERE id=?').get(id);
+    if(!owner||(user.role!=='admin'&&owner.owner_id!==user.id))throw fail('Registro não encontrado.',404);
+    const record=read(id);
+    if(!record)throw fail('Registro não encontrado.',404);
+    return record;
+  }
+  function deleteTestRecords(){
+    const rows=db.prepare('SELECT id,body FROM records').all();
+    const ids=rows.filter(row=>JSON.parse(row.body).isTest===true).map(row=>row.id);
+    const remove=db.prepare('DELETE FROM records WHERE id=?');
+    for(const id of ids)remove.run(id);
+    return ids.length;
+  }
   async function body(req){
     let text='';for await(const chunk of req){text+=chunk;if(Buffer.byteLength(text)>500000)throw fail('Conteúdo muito grande.',413);}
     try{return JSON.parse(text||'{}');}catch{throw fail('JSON inválido.');}
@@ -36,6 +50,7 @@ function createServer({dataDir=path.join(__dirname,'.data'),publicUrl=process.en
         const row=db.prepare('SELECT body FROM records WHERE token=?').get(hash(token));
         if(!row)throw fail('Link não encontrado.',404);
         let r=JSON.parse(row.body);
+        if(r.status==='archived')throw fail('Proposta arquivada. Solicite um novo link.',410);
         if(r.expiresAt<Date.now()&&r.status==='pending')throw fail('Proposta expirada. Solicite um novo link.',410);
         if(req.method==='GET'&&!action){
           const p=r.proposal;
@@ -44,6 +59,7 @@ function createServer({dataDir=path.join(__dirname,'.data'),publicUrl=process.en
         if(req.method!=='POST')throw fail('Método não permitido.',405);
         const data=await body(req);
         r=read(r.id);
+        if(r.status==='archived')throw fail('Proposta arquivada. Solicite um novo link.',410);
         if(r.expiresAt<Date.now()&&r.status==='pending')throw fail('Proposta expirada. Solicite um novo link.',410);
         for(const key of ['name','document','email'])if(typeof data[key]!=='string'||!data[key].trim()||data[key].length>250)throw fail('Preencha nome, documento e e-mail.');
         if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))throw fail('E-mail inválido.');
@@ -75,20 +91,33 @@ function createServer({dataDir=path.join(__dirname,'.data'),publicUrl=process.en
           return reply(200,rows.map(row=>({...JSON.parse(row.body),ownerId:row.owner_id})));
         }
         if(route==='/api/records'&&req.method==='POST'){
-          const {proposal}=await body(req);
+          const {proposal,isTest=false}=await body(req);
           auth.requireUser(req);
           Core.accept(proposal,{name:'Validação',document:'Validação',date:new Date().toISOString(),channel:'Validação',evidence:'Validação',confirmed:true},'validation');
           const token=crypto.randomBytes(32).toString('base64url'),id='PT-'+new Date().getFullYear()+'-'+crypto.randomBytes(5).toString('hex').toUpperCase();
-          const r={id,proposal,status:'pending',acceptance:null,contract:null,expiresAt:Date.now()+3*86400000,publicPath:'/cliente.html#'+token};
+          const r={id,proposal,status:'pending',isTest:isTest===true,acceptance:null,contract:null,expiresAt:Date.now()+3*86400000,publicPath:'/cliente.html#'+token};
           db.prepare('INSERT INTO records(id,token,body,owner_id) VALUES (?,?,?,?)').run(id,hash(token),JSON.stringify(r),user.id);return reply(201,r);
+        }
+        if(route==='/api/records/test'&&req.method==='DELETE'){
+          if(user.role!=='admin')throw fail('Acesso exclusivo do administrador.',403);
+          return reply(200,{ok:true,deleted:deleteTestRecords()});
+        }
+        const archiveMatch=route.match(/^\/api\/records\/([A-Z0-9-]+)\/archive$/);
+        if(archiveMatch&&req.method==='PATCH'){
+          const r=ownedRecord(archiveMatch[1],user);
+          if(r.status!=='pending'||r.acceptance)throw fail('Somente propostas enviadas e ainda não aceitas podem ser arquivadas.',409);
+          r.status='archived';r.archivedAt=new Date().toISOString();save(r);return reply(200,r);
+        }
+        const deleteMatch=route.match(/^\/api\/records\/([A-Z0-9-]+)$/);
+        if(deleteMatch&&req.method==='DELETE'){
+          const r=ownedRecord(deleteMatch[1],user);
+          if(r.acceptance||!['pending','archived'].includes(r.status))throw fail('Somente propostas sem aceite podem ser deletadas.',409);
+          db.prepare('DELETE FROM records WHERE id=?').run(r.id);return reply(200,{ok:true,id:r.id});
         }
         const match=route.match(/^\/api\/records\/([A-Z0-9-]+)\/contract$/);
         if(match&&req.method==='PUT'){
           const data=await body(req);
-          auth.requireUser(req);
-          const owner=db.prepare('SELECT owner_id FROM records WHERE id=?').get(match[1]);
-          if(!owner||(user.role!=='admin'&&owner.owner_id!==user.id))throw fail('Registro não encontrado.',404);
-          const r=read(match[1]);
+          const r=ownedRecord(match[1],user);
           if(!r.acceptance||r.status==='signed')throw fail('Contrato sem aceite ou já assinado. Alterações não permitidas.',409);
           if(typeof data.text!=='string'||!data.text.trim()||!data.details||data.reviewed!==true)throw fail('Revise o contrato antes de publicar.');
           if(data.previousRevision!==(r.contract?.revision||0))throw fail('Outra versão foi salva. Reabra o contrato.',409);

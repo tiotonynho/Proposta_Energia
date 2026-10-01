@@ -2,14 +2,19 @@
 .acceptance-panel .form-grid{margin-top:18px}
 .check-label{display:flex;gap:12px;align-items:flex-start;margin:20px 0;font-size:13px}
 .check-label input{width:18px;height:18px;margin:0;flex-shrink:0}
+.test-record-label{align-items:center;color:#6b4b12}
 .contract-row{display:flex;align-items:center;gap:20px;padding:20px 0;border-top:1px solid var(--line)}
 .contract-row>div{flex:1}.contract-row small{display:block;margin-top:5px;color:var(--muted)}
 .contract-row{flex-wrap:wrap}.customer-link,#customerLink{display:block;overflow-wrap:anywhere;font-size:13px;margin:12px 0;color:#b5470b}
+.record-actions{display:flex;flex:0 0 auto!important;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.ghost.danger{color:#9f241b;border-color:#f0c7c2;background:#fff8f7}
+.ghost.danger:hover{background:#fdecea}
 .contract-links{margin-bottom:18px}#serverLogin{max-width:480px;margin:20px 0}#serverLogin button{margin-top:12px}
 .public-contract{white-space:pre-wrap;line-height:1.8;border-top:2px solid #ec6c19;padding-top:24px;margin-top:28px}
 @page contractSheet{size:A4;margin:18mm;@bottom-right{content:counter(page);font-size:9pt;color:#646363}}
 .contract-controls .panel{margin-bottom:28px}.contract-controls form>.primary{margin-top:22px}
 #contractReview{margin-top:28px;padding-top:22px;border-top:1px solid var(--line)}
+.contract-review-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 textarea{width:100%;display:block;margin-top:10px;padding:16px;font:14px/1.7 Nunito,Arial,sans-serif;border:1px solid var(--line);border-radius:10px;resize:vertical}
 button:disabled{opacity:.5;cursor:not-allowed}
 #contractMessage,#acceptanceMessage,#contractStorageMessage{font-size:13px;color:#a63e12}
@@ -19,7 +24,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .contract-document h1{font-size:20px;text-align:center;margin:28px 0}
 .contract-document p{white-space:pre-line;margin:0 0 18px}
 .contract-annex{margin-top:40px;padding-top:20px;border-top:2px solid #ec6c19}
-@media(max-width:600px){.contract-row{flex-wrap:wrap;gap:12px}.contract-document{padding:24px 18px}.contract-letterhead{flex-direction:column}}
+@media(max-width:600px){.contract-row{flex-wrap:wrap;gap:12px}.record-actions{width:100%;justify-content:flex-start}.contract-document{padding:24px 18px}.contract-letterhead{flex-direction:column}}
 @media print{
   body[data-print="contract"],body.customer-page{width:auto;page:contractSheet}
   .customer-page main{max-width:none!important;padding:0!important}
